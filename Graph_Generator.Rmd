@@ -1,0 +1,95 @@
+---
+title: "Graph Generator"
+output: pdf_document
+date: "2026-01-29"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## This document shows how to use functions and apply it to data for various graphs
+
+```{r}
+
+library(tidyverse)
+
+years <- 2001:2026 ## Set years
+
+Employee.Info <- setNames(
+  lapply(years, function(y) {
+    read.csv(paste0("Employee_", y, ".csv"))
+  }),
+  years
+)
+
+```
+
+## Graph Generator Function
+```{r}
+
+## The column name in excel (category.year)
+
+plot_employee_data <- function(data, year, category, x_label, title_label, top_n = 10) {
+  
+    col_name <- paste0(category, ".", year)
+    col_sym  <- sym(col_name)
+    
+    count_df <- data %>%
+      filter(!is.na(!!col_sym)) %>%
+      count(!!col_sym) %>%
+      slice_max(n, n = top_n)
+    
+    ggplot(count_df, aes(x = fct_reorder(!!col_sym, n, .desc = TRUE), y = n)) +
+      
+      geom_col(fill = "steelblue") +
+      coord_flip() +
+      labs(
+        x = x_label,
+        y = "Number of Employees",
+        title = paste( "Number of Employees by", title_label, "(", year, ")")
+      )
+}
+
+```
+
+## Job Title Graphs
+```{r}
+
+job_plots <- lapply(years, function(y) {
+  plot_employee_data(
+    data = Employee.Info[[as.character(y)]], year = y, category = "Job.Title", x_label = "Job Title", title_label = "Job Title Graphs")
+})
+
+names(job_plots) <- years
+
+for (p in job_plots) print(p)
+
+```
+
+## Pay Graphs
+```{r}
+
+pay_plots <- lapply(years, function(y) {
+  plot_employee_data(Employee.Info[[as.character(y)]], year = y, category = "Pay", x_label = "Pay", title_label = "Pay Graphs")
+})
+
+names(pay_plots) <- years
+
+for (p in pay_plots) print(p)
+
+```
+
+## Effective Graphs
+```{r}
+
+effective_plots <- lapply(years, function(y) {
+  plot_employee_data(Employee.Info[[as.character(y)]], year = y, category = "Effective", x_label = "Effective", title_label = "Effective Graphs")
+})
+
+names(effective_plots) <- years
+
+for (p in effective_plots) print(p)
+
+```
+

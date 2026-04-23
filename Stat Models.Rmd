@@ -1,0 +1,334 @@
+---
+title: "Stat Models"
+output: pdf_document
+date: "2025-12-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+
+suppressMessages(library(tidyverse))
+library(modelr)
+library(gapminder)
+
+```
+
+## A simple model (linear)
+```{r}
+
+ggplot(sim1, aes(x, y)) + 
+  geom_point()
+
+## The Model
+models <- tibble(
+  a1 = runif(250, -20, 40), ## Run 250 models
+  a2 = runif(250, -5, 5)
+)
+
+ggplot(sim1, aes(x, y)) + 
+  geom_abline(aes(intercept = a1, slope = a2), data = models, alpha = 1/4) +
+  geom_point() 
+
+```
+
+## Finding Residuals (This distance is the prediction and the actual y value in the data)
+```{r}
+
+model1 <- function(a, data) {
+  a[1] + data$x * a[2]
+}
+model1(c(7, 1.5), sim1)
+
+```
+
+## Root square mean for ANOVA
+```{r}
+
+measure_distance <- function(mod, data) {
+  diff <- data$y - model1(mod, data)
+  sqrt(mean(diff ^ 2))
+}
+measure_distance(c(7, 1.5), sim1)
+
+
+```
+## Use purrr to compute the distance for all the models defined above.
+```{r}
+
+sim1_dist <- function(a1, a2) {
+  measure_distance(c(a1, a2), sim1)
+}
+
+models <- models %>% 
+  mutate(dist = purrr::map2_dbl(a1, a2, sim1_dist))
+models
+
+```
+
+## Best Model means smallest distance between predicted and observed
+```{r}
+
+ggplot(sim1, aes(x, y)) + 
+  geom_point(size = 2, colour = "grey30") + 
+  geom_abline(
+    aes(intercept = a1, slope = a2, colour = -dist), 
+    data = filter(models, rank(dist) <= 10)
+  )
+
+```
+
+## We could represent as a scatterplot (with loss of 0 being the best)
+```{r}
+
+ggplot(models, aes(a1, a2)) +
+  geom_point(data = filter(models, rank(dist) <= 10), size = 4, colour = "red") +
+  geom_point(aes(colour = -dist))
+
+```
+## Conducting a grid search
+```{r}
+
+grid <- expand.grid(
+  a1 = seq(-5, 20, length = 25),
+  a2 = seq(1, 3, length = 25)
+  ) %>% 
+  mutate(dist = purrr::map2_dbl(a1, a2, sim1_dist))
+
+grid %>% 
+  ggplot(aes(a1, a2)) +
+  geom_point(data = filter(grid, rank(dist) <= 10), size = 4, colour = "red") +
+  geom_point(aes(colour = -dist)) 
+
+```
+
+## How to choose which model
+```{r}
+
+ggplot(sim1, aes(x, y)) + 
+  geom_point(size = 2, colour = "grey30") + 
+  geom_abline(
+    aes(intercept = a1, slope = a2, colour = -dist), 
+    data = filter(grid, rank(dist) <= 10)
+  )
+
+```
+
+## Iteratively making the grid finer and finer until you narrowed in on the best model. 
+```{r}
+
+best <- optim(c(0, 0), measure_distance, data = sim1)
+best$par ## you pick a starting point and look around for the steepest slope.
+
+ggplot(sim1, aes(x, y)) + 
+  geom_point(size = 2, colour = "grey30") + 
+  geom_abline(intercept = best$par[1], slope = best$par[2])
+
+```
+
+## Fitting a linear model
+```{r}
+
+sim1_mod <- lm(y ~ x, data = sim1)
+coef(sim1_mod)
+
+```
+## First argument is a data frame, and for each subsequent argument it finds the unique variables and then generates all combinations
+```{r}
+
+grid <- sim1 %>% 
+  data_grid(x) 
+grid
+
+grid <- grid %>% 
+  add_predictions(sim1_mod) ## add the predictions
+grid
+
+```
+
+## Add the plot line (predictions)
+```{r}
+
+ggplot(sim1, aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_line(aes(y = pred), data = grid, colour = "red", size = 1)
+
+```
+
+```{r}
+
+sim1 <- sim1 %>% 
+  add_residuals(sim1_mod)
+sim1
+
+ggplot(sim1, aes(resid)) + 
+  geom_freqpoly(binwidth = 0.5)
+
+```
+
+## One-hot encoding (converting categorical to continuous using binary)
+```{r}
+
+df <- tribble(
+  ~ sex, ~ response,
+  "male", 1,
+  "female", 2,
+  "male", 1
+)
+model_matrix(df, response ~ sex)
+
+```
+
+## Categorical predictor and continuous predictor
+```{r}
+
+ggplot(sim3, aes(x1, y)) + 
+  geom_point(aes(colour = x2))
+
+mod1 <- lm(y ~ x1 + x2, data = sim3)
+mod2 <- lm(y ~ x1 * x2, data = sim3) ## interaction
+
+```
+
+## Interactions (two continuous)
+```{r}
+
+mod1 <- lm(y ~ x1 + x2, data = sim4)
+mod2 <- lm(y ~ x1 * x2, data = sim4)
+
+grid <- sim4 %>% 
+  data_grid(
+    x1 = seq_range(x1, 5), 
+    x2 = seq_range(x2, 5) 
+  ) %>% 
+  gather_predictions(mod1, mod2)
+grid
+
+```
+
+## Graphing
+```{r}
+
+gapminder %>% 
+  ggplot(aes(year, lifeExp, group = country)) +
+    geom_line(alpha = 1/3)
+    
+```
+
+## Fit the model
+```{r}
+
+country_model <- function(df) {
+  lm(lifeExp ~ year, data = df)
+}
+
+```
+
+## Model Quality
+```{r}
+
+nz <- filter(gapminder, country == "New Zealand")
+nz %>% 
+  ggplot(aes(year, lifeExp)) + 
+  geom_line() + 
+  ggtitle("Full data = ")
+
+nz_mod <- lm(lifeExp ~ year, data = nz)
+nz %>% 
+  add_predictions(nz_mod) %>%
+  ggplot(aes(year, pred)) + 
+  geom_line() + 
+  ggtitle("Linear trend + ")
+
+nz %>% 
+  add_residuals(nz_mod) %>% 
+  ggplot(aes(year, resid)) + 
+  geom_hline(yintercept = 0, colour = "white", size = 3) + 
+  geom_line() + 
+  ggtitle("Remaining pattern")
+
+```
+
+## Nested data
+```{r}
+
+by_country <- gapminder %>% 
+  group_by(country, continent) %>% 
+  nest()
+
+by_country
+
+## Load the data
+gapminder
+
+broom::glance(nz_mod)
+
+models <- map(by_country$data, country_model)
+
+by_country <- by_country %>% 
+  mutate(model = map(data, country_model))
+by_country
+
+
+```
+
+```{r}
+
+by_country %>% 
+  mutate(glance = map(model, broom::glance)) %>% 
+  unnest(glance)
+
+```
+
+## Evaluating Model Fit
+```{r}
+
+glance <- by_country %>% 
+  mutate(glance = map(model, broom::glance)) %>% 
+  unnest(glance, .drop = TRUE)
+
+glance %>% 
+  arrange(r.squared)
+
+```
+
+## Keeps columns together
+```{r}
+
+gapminder %>% 
+  group_by(country, continent) %>% 
+  nest()
+
+```
+
+## List-column - From vectorized functions
+```{r}
+
+df <- tribble(
+  ~x1,
+  "a,b,c", 
+  "d,e,f,g"
+) 
+
+df %>% 
+  mutate(x2 = stringr::str_split(x1, ",")) ## takes a character vector and returns a list of character vectors
+
+```
+
+```{r}
+
+df %>% 
+  mutate(x2 = stringr::str_split(x1, ",")) %>% 
+  unnest(x2)
+
+```
+
+
+
+
+
+
+

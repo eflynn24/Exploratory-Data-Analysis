@@ -1,0 +1,329 @@
+---
+title: "Bar_Chart"
+output: pdf_document
+date: "2025-12-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load library and data
+```{r}
+
+getwd() ## get the working directory
+
+## Load libraries
+suppressMessages(library(tidyverse))
+library(lattice)
+library(palmerpenguins)
+
+## Load data
+school_front <- read.csv("Job Applicants DATA 12-29.csv") ## recruitment info.
+View(school_front)
+
+```
+
+## Summary
+```{r}
+
+school_front <- as_tibble(school_front) ## convert to structured data frame
+
+job_title <- school_front$Job.Title
+
+summarize(school_front) ## the summary
+
+```
+
+## The first two arguments to ggplot() are data and mapping, and the first two arguments to aes() are x and y.
+
+```{r}
+
+## Job Titles Distribution
+bar_plot <- ggplot(school_front) +
+  geom_bar(mapping = aes(x = job_title))
+
+school_front %>% 
+  count(job_title)
+
+## Certification Distribution
+ggplot(school_front) +
+  geom_bar(mapping = aes(x = Cert.Area.List))
+
+school_front %>% 
+  count(Cert.Area.List)
+
+## Civil Service Test Distribution
+ggplot(school_front) +
+  geom_bar(mapping = aes(x = Civil.Service.Test))
+
+school_front %>% 
+  count(Civil.Service.Test) ## There are NA; more people said 'no' to civil service test (inference is that less people are taking civil service test)
+
+## School District Distribution
+ggplot(school_front) +
+  geom_bar(mapping = aes(x = Currently.Employed.District))
+
+school_front %>% 
+  count(Currently.Employed.District)
+
+## Law Conviction Distribution
+ggplot(school_front) +
+  geom_bar(mapping = aes(x = Law.Conviction, na.rm = TRUE))
+
+school_front %>% 
+  count(Law.Conviction) ## NA category is there; n = 2508 said 'no'; n = 92 said 'yes'
+
+## Job Type Distribution
+ggplot(school_front) +
+  geom_bar(mapping = aes(x = Teacher...Admin.Positions))
+
+school_front %>% 
+  count(Teacher...Admin.Positions) ## Top positions; Administrator = 611; Teaching Assistant = 481
+
+## Full-time or Part-time
+ggplot(school_front) +
+  geom_bar(mapping = aes(x = Employment.Status.Interests))
+
+school_front %>% 
+  count(Employment.Status.Interests) ## Re-factor these so it's just full-time, part-time, and other...
+
+school_front$Areas.of.Proficiency ## Needs to be re-factored
+
+school_front$Types.of.Positions ## Several categories could be combined
+
+school_front$Application.Type.Statuses ## IDK yet
+
+## Demographics
+
+## Applicant City Distribution 
+ggplot(school_front) +
+  geom_bar(mapping = aes(x = Permanent.City))
+
+school_front %>% 
+  count(Permanent.City) ## This data has NA (" "); the data is not considering as NA though, empty string isn't the same
+
+school_front$Permanent.State
+
+school_front$How.did.you.hear.about.our.district...job. ## Determine which platforms are most effective
+
+```
+
+## Distribution Check (Continuous = Histogram)
+```{r}
+
+dates <- structured_data$Job.Deadline
+
+years_experience <- school_front_data$Private.Years
+
+ggplot(structured_data) +
+  geom_histogram(mapping = aes(x = years_experience))
+
+
+## ggplot(structured_data) +
+  ## geom_histogram(mapping = aes(x = dates, binwidth = 0.5))
+
+## Numerics
+GPA <- na.omit(school_front$Under.Graduate.All.Courses.GPA)
+
+```
+
+## Using binwidth (jobs that have few vs. many candidates)
+```{r}
+
+small_subgroups <- structured_data %>% 
+  filter(Candidates.Total.Count < 5)
+
+var(small_subgroups) ## Least popular jobs
+
+medium_subgroups <- structured_data %>% 
+  filter(Candidates.Total.Count < 10)
+
+medium_subgroups
+
+
+large_subgroups <- structured_data %>% 
+  filter(Candidates.Total.Count > 15)
+
+large_subgroups ## Most popular jobs
+
+```
+
+## Clustering Effects (reveal sub-groups)
+```{r}
+
+## ggplot(data = small_subgroups, mapping = aes(x = )) +
+  ## geom_histogram(binwidth = 0.01)
+
+```
+
+## Replacing the unusual values with missing values
+```{r}
+
+## You can use the ifelse() function to replace unusual values with NA.
+
+diamonds2 <- diamonds %>% 
+  mutate(y = ifelse(y < 3 | y > 20, NA, y)) ## use mutate() to replace the variable with a modified copy
+
+```
+
+## Boxplots (identify outliers) ## 130 - 150k has the most outliers...
+```{r}
+
+box_plots <- ggplot(data = structured_data, mapping = aes(x = Candidates.Total.Count, y = Pay.Scale)) +
+  geom_boxplot()
+
+```
+
+## Variation among classes
+```{r}
+
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) +
+  geom_boxplot()
+
+```
+
+## Scatterplot Distribution
+```{r}
+
+scatter_plot <- ggplot(data = structured_data) + 
+  geom_point(mapping = aes(x = Candidates.Total.Count, y = Pay.Scale))
+
+scatter_plot
+
+```
+
+## Parsing
+```{r}
+
+pay.scale <- parse_number(structured_data$Pay.Scale)
+
+## typeof(pay.scale)
+## sd(pay.scale)
+## var(pay.scale)
+
+```
+
+## Relational Data
+```{r}
+
+## nycflights13 contains four tibbles that are related to the flights table
+
+## top_dest <- flights %>%
+  ## count(dest, sort = TRUE) %>%
+  ## head(10)
+## top_dest
+
+## flights %>% 
+  ## filter(dest %in% top_dest$dest)
+
+```
+
+## Replacement
+```{r}
+
+## With str_replace_all() you can perform multiple replacements by supplying a named vector
+
+x <- c("Per contract", 
+       "Based on experience and demonstrated abilities",
+       "Negotiable")
+
+str_replace_all(x, c("Per contract" = "Not a number", "Based on experience and demonstrated abilities" = "NA", "Negotiable" = "This still isn't a number"))
+
+```
+
+## Replacement (test)
+```{r}
+
+x <- structured_data$Pay.Scale
+
+str_replace_all(x, c("Per contract" = "Not a number",
+                     "Based on experience and demonstrated abilities" = "NA",
+                     "Negotiable" = "This still isn't a number"))
+
+```
+
+## Arrange the data
+```{r}
+
+date <- structured_data$Tracker.Date
+
+title <- structured_data$Job.Title
+
+arrange(structured_data, date)
+
+## Numeric Variables
+years_experience <- wincap_data$Private.Years
+GPA <- wincap_data$Under.Graduate.All.Courses.GPA
+service_years <- school_front$Public.Years
+
+cor.test(service_years, years_experience) ##
+
+
+
+
+```
+
+```{r}
+
+sample_data <- penguins
+
+View(sample_data)
+
+cor.test(penguins$bill_length_mm, penguins$flipper_length_mm, method = "pearson") ## Moderate correlation
+
+```
+
+```{r}
+
+ggplot(na.omit(penguins), 
+       # aesthetic mappings
+       aes(
+         # flipper length (y) vs body mass (x)
+         x = body_mass_g, y = flipper_length_mm, 
+         # color AND shape of points vary by island
+         color = island, shape = island)) +
+  # geom_point to add points layer
+  geom_point() + 
+  # specify labels for ALL mappings (both Island labels required)
+  labs(x = "Body size (g)", 
+       y = "Flipper length (mm)",
+       colour = "Island", shape = "Island") +
+  # facet on sex by species grid
+  facet_grid(rows = vars(sex), cols = vars(species))
+
+```
+
+## Colors
+```{r}
+
+ set.seed(19)
+ x <- rnorm(30)
+ y <- rnorm(30)
+ plot(x, y, col = rep(1:3, each = 10), pch = 19)
+ legend("bottomright", legend = paste("Group", 1:3), col = 1:3, pch = 19, bty = "n")
+
+```
+
+```{r}
+
+penguins %>% 
+  group_by(species) %>% 
+  summarise(mean_bill_length = mean(bill_length_mm, na.rm = TRUE))
+
+```
+
+```{r}
+
+sorting <- select(structured_data, starts_with("Newark"))
+sorting
+
+```
+
+
+
+
+
+
+
+

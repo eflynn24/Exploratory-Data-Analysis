@@ -1,0 +1,93 @@
+---
+title: "Example Plots"
+output: pdf_document
+date: "2025-12-08"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load library and wd
+```{r}
+
+suppressMessages(library(tidyverse))
+library(knitr)
+library(ggplot2)
+library(titanic)
+library(faraway)
+library(faraway)
+library(GGally)  
+
+```
+
+## Creating Histograms
+```{r}
+
+data("titanic_train", package = "titanic")
+titanic <- titanic_train
+
+
+
+histogram <- ggplot(titanic, aes(x = Fare)) + ## Initialize a ggplot object
+geom_histogram(bins = 15) +
+  ggtitle("Histogram") +
+  xlab("Fare Cost") +
+   theme_minimal()
+
+histogram
+
+```
+
+## Creating Scatter-plots
+```{r}
+
+data("worldcup", package = "faraway")
+world_cup <- worldcup
+scatter <- ggplot(world_cup, aes(x = Time, y = Passes)) + 
+geom_point() +
+  geom_smooth() +
+  ggtitle("Scatterplot") +
+  theme_minimal()
+
+scatter
+
+```
+
+## Boxplots
+```{r}
+
+boxplot <- ggplot(nepali, aes(x = 1, y = ht)) + 
+  geom_boxplot() + 
+  xlab("")+ ylab("Height (cm)") +
+  theme_minimal()
+
+boxplot
+
+```
+
+## Exploratory data analysis
+```{r}
+
+eda <- ggpairs(titanic %>% select(Fare, Age, Survived))
+eda
+
+```
+
+
+
+
+
+
+## Data Cleaning
+```{r}
+
+nepali <- nepali %>%
+  select(id, sex, wt, ht, age) %>%
+  mutate(id = factor(id),
+         sex = factor(sex, levels = c(1, 2),
+                      labels = c("Male", "Female"))) %>%
+  distinct(id, .keep_all = TRUE)
+
+```
+
