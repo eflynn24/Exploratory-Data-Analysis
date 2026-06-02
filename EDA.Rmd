@@ -10,86 +10,76 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 
-getwd()
 suppressMessages(library(tidyverse))
 library(lattice)
-
-school_front <- read.csv("Job_Applicants.csv") ## recruitment info.
+data <- read.csv()
 
 ```
 ```{r}
 
-school_front <- as_tibble(school_front) ## convert to structured data frame
-
-job_title <- school_front$Job.Title
-
-summarize(school_front) ## the summary
+data <- as_tibble() ## convert to structured data frame
+summarize()
+job_title <- data$Job.Title
 
 ```
 
 ```{r}
 
 ## Job Titles Distribution
-bar_plot <- ggplot(school_front) +
+bar_plot <- ggplot(data) +
   geom_bar(mapping = aes(x = job_title))
 
-school_front %>% 
+data %>% 
   count(job_title)
 
 ## Certification Distribution
-ggplot(school_front) +
+ggplot(data) +
   geom_bar(mapping = aes(x = Cert.Area.List))
 
-school_front %>% 
+data %>% 
   count(Cert.Area.List)
 
 ## Civil Service Test Distribution
-ggplot(school_front) +
+ggplot(data) +
   geom_bar(mapping = aes(x = Civil.Service.Test))
 
 school_front %>% 
   count(Civil.Service.Test)
 
 ## School District Distribution
-ggplot(school_front) +
+ggplot(data) +
   geom_bar(mapping = aes(x = Currently.Employed.District))
 
-school_front %>% 
+data %>% 
   count(Currently.Employed.District)
 
 ## Law Conviction Distribution
-ggplot(school_front) +
+ggplot(data) +
   geom_bar(mapping = aes(x = Law.Conviction, na.rm = TRUE))
 
-school_front %>% 
+data %>% 
   count(Law.Conviction)
 
 ## Job Type Distribution
-ggplot(school_front) +
+ggplot(data) +
   geom_bar(mapping = aes(x = Teacher...Admin.Positions))
 
 school_front %>% 
-  count(Teacher...Admin.Positions) ## Top positions; Administrator = 611; Teaching Assistant = 481
+  count(Teacher...Admin.Positions)
 
 ## Full-time or Part-time
-ggplot(school_front) +
+ggplot(data) +
   geom_bar(mapping = aes(x = Employment.Status.Interests))
 
-school_front %>% 
-count(Employment.Status.Interests) 
-school_front$Areas.of.Proficiency 
-school_front$Types.of.Positions 
-school_front$Application.Type.Statuses
-
 ## Applicant City Distribution 
-ggplot(school_front) +
+ggplot(data) +
   geom_bar(mapping = aes(x = Permanent.City))
 
-school_front %>% 
+data %>% 
 count(Permanent.City)
 
-school_front$Permanent.State
-school_front$How.did.you.hear.about.our.district...job. ## Determine which platforms are most effective
+data$Permanent.State
+data$How.did.you.hear.about.our.district...job. ## Determine which platforms are most effective
 
 ```
 
