@@ -17,7 +17,9 @@ data <- read.csv()
 ```
 ```{r}
 
-data <- as_tibble() ## convert to structured data frame
+## Convert to structured data frame
+
+data <- as_tibble()
 summarize()
 job_title <- data$Job.Title
 
@@ -26,6 +28,7 @@ job_title <- data$Job.Title
 ```{r}
 
 ## Job Titles Distribution
+
 bar_plot <- ggplot(data) +
   geom_bar(mapping = aes(x = job_title))
 
@@ -33,58 +36,60 @@ data %>%
   count(job_title)
 
 ## Certification Distribution
+
 ggplot(data) +
   geom_bar(mapping = aes(x = Cert.Area.List))
-
-data %>% 
-  count(Cert.Area.List)
+    data %>% 
+      count(Cert.Area.List)
 
 ## Civil Service Test Distribution
+
 ggplot(data) +
   geom_bar(mapping = aes(x = Civil.Service.Test))
-
-school_front %>% 
-  count(Civil.Service.Test)
+    school_front %>% 
+      count(Civil.Service.Test)
 
 ## School District Distribution
+
 ggplot(data) +
   geom_bar(mapping = aes(x = Currently.Employed.District))
-
-data %>% 
-  count(Currently.Employed.District)
+    data %>% 
+      count(Currently.Employed.District)
 
 ## Law Conviction Distribution
+
 ggplot(data) +
   geom_bar(mapping = aes(x = Law.Conviction, na.rm = TRUE))
-
-data %>% 
-  count(Law.Conviction)
+    data %>% 
+      count(Law.Conviction)
 
 ## Job Type Distribution
+
 ggplot(data) +
   geom_bar(mapping = aes(x = Teacher...Admin.Positions))
-
-school_front %>% 
-  count(Teacher...Admin.Positions)
+    school_front %>% 
+      count(Teacher...Admin.Positions)
 
 ## Full-time or Part-time
+
 ggplot(data) +
   geom_bar(mapping = aes(x = Employment.Status.Interests))
 
 ## Applicant City Distribution 
+
 ggplot(data) +
   geom_bar(mapping = aes(x = Permanent.City))
+    data %>% 
+      count(Permanent.City)
 
-data %>% 
-count(Permanent.City)
-
-data$Permanent.State
-data$How.did.you.hear.about.our.district...job. ## Determine which platforms are most effective
+## Determine which platforms are most effective
+data$How.did.you.hear.about.our.district...job.
 
 ```
 
-## Distribution Check (Continuous = Histogram)
 ```{r}
+
+## Distribution Check (Continuous = Histogram)
 
 dates <- structured_data$Job.Deadline
 
@@ -102,8 +107,9 @@ GPA <- na.omit(school_front$Under.Graduate.All.Courses.GPA)
 
 ```
 
-## Using binwidth (jobs that have few vs. many candidates)
 ```{r}
+
+## Using binwidth (jobs that have few vs. many candidates)
 
 small_subgroups <- structured_data %>% 
   filter(Candidates.Total.Count < 5)
@@ -123,59 +129,62 @@ large_subgroups ## Most popular jobs
 
 ```
 
-## Clustering Effects (reveal sub-groups)
 ```{r}
+
+## Clustering Effects (reveal sub-groups)
 
 ggplot(data = small_subgroups, mapping = aes(x = )) +
   geom_histogram(binwidth = 0.01)
 
 ```
 
-## Replacing the unusual values with missing values
 ```{r}
 
-## You can use the ifelse() function to replace unusual values with NA.
+## Replacing the unusual values with missing values
 
  school_front <- school_front %>% 
-  mutate(y = ifelse(y < 3 | y > 20, NA, y)) ## use mutate() to replace the variable with a modified copy
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
 
 ```
 
-## Boxplots (identify outliers)
 ```{r}
+
+## Boxplots (identify outliers)
 
 box_plots <- ggplot(data = structured_data, mapping = aes(x = Candidates.Total.Count, y = Pay.Scale)) +
   geom_boxplot()
 
 ```
 
-## Scatterplot Distribution
 ```{r}
+
+## Scatterplot Distribution
 
 scatter_plot <- ggplot(data = structured_data) + 
   geom_point(mapping = aes(x = Candidates.Total.Count, y = Pay.Scale))
 
-scatter_plot
-
 ```
+
+```{r}
 
 ## Parsing
-```{r}
 
 pay.scale <- parse_number(structured_data$Pay.Scale)
-## typeof(pay.scale)
-## sd(pay.scale)
-## var(pay.scale)
+typeof(pay.scale)
+sd(pay.scale)
+var(pay.scale)
 
 ```
 
-## Replacement
 ```{r}
-## With str_replace_all() you can perform multiple replacements by supplying a named vector
+
+## Replacement
 
 x <- c("Per contract", 
        "Based on experience and demonstrated abilities",
        "Negotiable")
+
+## With str_replace_all() you can perform multiple replacements by supplying a named vector
 
 str_replace_all(x, c("Per contract" = "Not a number",
 "Based on experience and demonstrated abilities" = "NA",
@@ -193,14 +202,16 @@ str_replace_all(x, c("Per contract" = "Not a number",
 
 ```
 
-## Arrange the data
 ```{r}
+
+## Arrange the data
 
 date <- structured_data$Tracker.Date
 title <- structured_data$Job.Title
 arrange(structured_data, date)
 
 ## Numeric Variables
+
 years_experience <- wincap_data$Private.Years
 GPA <- wincap_data$Under.Graduate.All.Courses.GPA
 service_years <- school_front$Public.Years
@@ -211,7 +222,6 @@ cor.test(service_years, years_experience)
 ```{r}
 
 sorting <- select(structured_data, starts_with("Newark"))
-sorting
 
 ```
 
