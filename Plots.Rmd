@@ -8,8 +8,9 @@ date: "2025-12-08"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Load library and wd
 ```{r}
+
+## Load library and working directory
 
 suppressMessages(library(tidyverse))
 library(knitr)
@@ -21,15 +22,14 @@ library(GGally)
 
 ```
 
-## Creating Histograms
 ```{r}
+
+## Creating Histograms
 
 data("titanic_train", package = "titanic")
 titanic <- titanic_train
 
-
-
-histogram <- ggplot(titanic, aes(x = Fare)) + ## Initialize a ggplot object
+histogram <- ggplot(titanic, aes(x = Fare)) +
 geom_histogram(bins = 15) +
   ggtitle("Histogram") +
   xlab("Fare Cost") +
@@ -39,8 +39,9 @@ histogram
 
 ```
 
-## Creating Scatter-plots
 ```{r}
+
+## Creating scatter-plots
 
 data("worldcup", package = "faraway")
 world_cup <- worldcup
@@ -54,8 +55,9 @@ scatter
 
 ```
 
-## Boxplots
 ```{r}
+
+## Boxplots
 
 boxplot <- ggplot(nepali, aes(x = 1, y = ht)) + 
   geom_boxplot() + 
@@ -66,27 +68,24 @@ boxplot
 
 ```
 
-## Exploratory data analysis
 ```{r}
 
+## Exploratory data analysis
+
 eda <- ggpairs(titanic %>% select(Fare, Age, Survived))
-eda
 
 ```
 
-
-
-
-
+```{r}
 
 ## Data Cleaning
-```{r}
 
 nepali <- nepali %>%
   select(id, sex, wt, ht, age) %>%
   mutate(id = factor(id),
          sex = factor(sex, levels = c(1, 2),
                       labels = c("Male", "Female"))) %>%
+
   distinct(id, .keep_all = TRUE)
 
 ```
